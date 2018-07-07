@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="litros" type="id" />     <!-- Creates the id R.id.litros -->
+    <item name="caravana" type="id" />
+    <item name="muestra" type="id" />
+
+</resources>

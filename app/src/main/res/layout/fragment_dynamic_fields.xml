@@ -7,13 +7,14 @@
         android:id="@+id/parent_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
+        android:paddingBottom="80dp"
         android:orientation="vertical">
 
         <LinearLayout
+            android:id="@+id/horizontalView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="5dp"
+            android:layout_margin="10dp"
             android:orientation="horizontal">
 
             <Button
@@ -24,11 +25,18 @@
                 android:theme="@style/AppTheme.Button" />
 
             <Button
-                android:id="@+id/delete_button"
+                android:id="@+id/next_page"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/quitar"
+                android:text="@string/siguiente"
                 android:theme="@style/AppTheme.Button" />
+
+            <!--<Button-->
+                <!--android:id="@+id/delete_button"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="@string/quitar"-->
+                <!--android:theme="@style/AppTheme.Button" />-->
 
             <!--<Button-->
             <!--android:theme="@style/AppTheme.Button"-->

@@ -3,7 +3,6 @@ package com.example.diego.tabbedswipe;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 
 
@@ -11,7 +10,7 @@ import android.util.Log;
  * Created by Diego on 24/06/2018.
  */
 
-public class SectionsPagerAdapter extends FragmentPagerAdapter {
+public class SectionsPagerAdapter extends SmartFragmentStatePagerAdapter   {
 
     //    debug
     private String TAG = "DIEGO";
@@ -21,7 +20,15 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     private boolean CARAVANA = false;
     private int VACAS = 0;
 
-    private int pages = 6;
+    private static int NUM_ITEMS = 1;
+
+    public void setN(int N) {
+        NUM_ITEMS = N;
+    }
+
+    public SectionsPagerAdapter(FragmentManager fragmentManager) {
+        super(fragmentManager);
+    }
 
     SectionsPagerAdapter(FragmentManager fm, Bundle extras) {
         super(fm);
@@ -36,7 +43,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             VACAS = extras.getInt("VACAS");
 
             if (VACAS / BRETES > 0)
-                pages = (VACAS / BRETES) + 1;
+                NUM_ITEMS = (VACAS / BRETES) + 1;
 
         }
 
@@ -46,22 +53,21 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 //        Log.i(TAG,"VACAS "+VACAS);
     }
 
-    protected void onCreate(Bundle savedInstanceState) {
-
-    }
-
     @Override
+    // Returns the fragment to display for that page
     public Fragment getItem(int position) {
 
-        // getItem is called to instantiate the fragment for the given page.
-        // Return a DynamicFieldsFragment
-        Integer var = position;
-        DynamicFieldsFragment frag = new DynamicFieldsFragment();
+        DynamicFieldsFragment frag = null;
+////        frag = registeredFragments.get(position);
+////        if (frag != null && position != 0) return frag;
+        frag = new DynamicFieldsFragment();
         return frag.newInstance(position + 1, BRETES, MUESTRA, CARAVANA);
+
     }
 
+    // Returns total number of pages
     @Override
     public int getCount() {
-        return pages;
+        return NUM_ITEMS;
     }
 }

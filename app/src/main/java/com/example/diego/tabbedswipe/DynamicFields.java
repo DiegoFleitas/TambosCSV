@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -121,8 +120,8 @@ public class DynamicFields extends AppCompatActivity {
 
         int count = parentLayout.getChildCount();
 
-        TextView myAwesomeTextView = rowView.findViewById(R.id.textview_nro);
-        myAwesomeTextView.setText("" + count);
+//        TextView myAwesomeTextView = rowView.findViewById(R.id.textview_nro);
+//        myAwesomeTextView.setText("" + count);
 
         // Add the new row before the add field_cm button.
         parentLayout.addView(rowView, count - 1);
@@ -147,10 +146,10 @@ public class DynamicFields extends AppCompatActivity {
 
     public String getData() {
         EditText text;
-        String litros = "", caravana = "", muestra = "", brete = "", body = "", lote = "1";
+        String litros = "", caravana = "", muestra = "", brete = "", body = "", bretada = "1";
         try {
             if (CARAVANA && MUESTRA) {
-                body += "brete,litros,caravana,muestra,lote,\n";
+                body += "brete,litros,caravana,muestra,bretada,\n";
                 //            every field_cm group
                 int count = parentLayout.getChildCount();
                 Log.i(TAG, "count " + count);
@@ -180,7 +179,7 @@ public class DynamicFields extends AppCompatActivity {
                             text = (EditText) child;
                             muestra = text.getText().toString();
                             Log.i(TAG, "muestra " + muestra);
-                            body += brete + "," + litros + "," + caravana + "," + muestra + "," + lote + ",\n";
+                            body += brete + "," + litros + "," + caravana + "," + muestra + "," + bretada + ",\n";
                             Log.i(TAG, body);
                         }
                     }
@@ -188,7 +187,7 @@ public class DynamicFields extends AppCompatActivity {
             } else if (MUESTRA || CARAVANA) {
                 if (MUESTRA) {
 
-                    body += "brete,litros,muestra,lote,\n";
+                    body += "brete,litros,muestra,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -214,7 +213,7 @@ public class DynamicFields extends AppCompatActivity {
                                 text = (EditText) child;
                                 muestra = text.getText().toString();
                                 Log.i(TAG, "muestra " + muestra);
-                                body += brete + "," + litros + "," + muestra + "," + lote + ",\n";
+                                body += brete + "," + litros + "," + muestra + "," + bretada + ",\n";
                                 Log.i(TAG, body);
                             }
                         }
@@ -222,7 +221,7 @@ public class DynamicFields extends AppCompatActivity {
                 }
                 if (CARAVANA) {
 
-                    body += "brete,litros,caravana,lote,\n";
+                    body += "brete,litros,caravana,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -248,7 +247,7 @@ public class DynamicFields extends AppCompatActivity {
                                 text = (EditText) child;
                                 caravana = text.getText().toString();
                                 Log.i(TAG, "caravana " + caravana);
-                                body += brete + "," + litros + "," + caravana + "," + lote + ",\n";
+                                body += brete + "," + litros + "," + caravana + "," + bretada + ",\n";
                                 Log.i(TAG, body);
                             }
                         }
@@ -257,7 +256,7 @@ public class DynamicFields extends AppCompatActivity {
             } else {
                 Log.i(TAG, "No se setearon MUESTRA y CARAVANA");
 
-                body += "brete,litros,lote,\n";
+                body += "brete,litros,bretada,\n";
 
                 //            every field_cm group
                 int count = parentLayout.getChildCount();
@@ -278,7 +277,7 @@ public class DynamicFields extends AppCompatActivity {
                             text = (EditText) child;
                             litros = text.getText().toString();
                             Log.i(TAG, "litros " + litros);
-                            body += brete + "," + litros + "," + lote + ",\n";
+                            body += brete + "," + litros + "," + bretada + ",\n";
                             Log.i(TAG, body);
                         }
                     }
@@ -337,9 +336,9 @@ public class DynamicFields extends AppCompatActivity {
         }
     }
 
-    public void onBackPressed() {
-        // do something here and don't write super.onBackPressed()
-        Toast.makeText(getApplicationContext(), "Si habilito este boton vas a perder tu progreso...", Toast.LENGTH_LONG).show();
-    }
+//    public void onBackPressed() {
+//        // do something here and don't write super.onBackPressed()
+//        Toast.makeText(getApplicationContext(), "Si habilito este boton vas a perder tu progreso...", Toast.LENGTH_LONG).show();
+//    }
 
 }

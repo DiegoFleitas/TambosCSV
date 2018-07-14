@@ -1,20 +1,20 @@
 package com.example.diego.tabbedswipe;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -23,29 +23,35 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 
-public class SwypeActivity extends AppCompatActivity {
+public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFragment.myCommunicationInterface {
 
     //    create file
     private static final String LOG_TAG_EXTERNAL_STORAGE = "EXTERNAL_STORAGE";
     private static final int REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION = 1;
+
     //    debug
     String TAG = "DIEGO";
+
     //    views
-    private LinearLayout parentLayout;
     private int BRETES = 0;
     private boolean CARAVANA = false;
     private boolean MUESTRA = false;
-    private int VACAS = 20;
+    private int VACAS = 0;
 
-    //  The {@link android.support.v4.view.PagerAdapter} that will provide
-    //  fragments for each of the sections. We use a
-    //  {@link FragmentPagerAdapter} derivative, which will keep every
-    //  loaded fragment in memory. If this becomes too memory intensive, it
-    //  may be best to switch to a
-    //  {@link android.support.v4.app.FragmentStatePagerAdapter}.
     private SectionsPagerAdapter mSectionsPagerAdapter;
-    //  The {@link ViewPager} that will host the section contents.
     private ViewPager mViewPager;
+
+    public void newPage(int pos) {
+
+        Log.i(TAG, "newPage "+pos);
+
+        // The user selected the headline of an article from the HeadlinesFragment
+        // Do something here to display that article
+//        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), null);
+        mSectionsPagerAdapter.setN(pos + 1);
+        mSectionsPagerAdapter.notifyDataSetChanged();
+        mViewPager.setCurrentItem(pos + 1);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +67,7 @@ public class SwypeActivity extends AppCompatActivity {
             BRETES = extras.getInt("BRETES");
             MUESTRA = extras.getBoolean("MUESTRA");
             CARAVANA = extras.getBoolean("CARAVANA");
-            VACAS = extras.getInt("VACAS");
+//            VACAS = extras.getInt("VACAS");
         }
 
 //        Log.i(TAG,"BRETES "+BRETES);
@@ -80,12 +86,13 @@ public class SwypeActivity extends AppCompatActivity {
         mViewPager = findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        int pages = 6;
-        if (VACAS / BRETES > 0)
-            pages = (VACAS / BRETES) + 1;
+        int pages = 1;
+        if (BRETES != 0 && VACAS / BRETES > 0)
+            pages = VACAS / BRETES;
 
         //Saves the state of N fragments
-        mViewPager.setOffscreenPageLimit(pages);
+        //TODO independizarse de esto para guardar datos
+        mViewPager.setOffscreenPageLimit(50);
 
         mViewPager.addOnPageChangeListener(new PageSelectedListener());
     }
@@ -105,7 +112,6 @@ public class SwypeActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_export) {
             onExport();
         }
@@ -120,36 +126,24 @@ public class SwypeActivity extends AppCompatActivity {
         String data = "";
         for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
 
-            Fragment f;
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            String tag = getFragmentTag(mViewPager.getId(), i);
-            f = getSupportFragmentManager().findFragmentByTag(tag);
-            if (f == null) {
-                //creates new instance
-                f = mSectionsPagerAdapter.getItem(i);
-            }
+            data += getFragmentData(i);
 
-            DynamicFieldsFragment dff = (DynamicFieldsFragment) f;
-            data += dff.recoverData();
-            if (data.length() != 0 && Objects.equals(data.substring(data.length() - 1), ","))
-                data += "\n";
-            else data += ",\n";
         }
 
         Log.i(TAG, data);
 
-
         generateNoteOnSD("", data);
-
 
         Log.i(TAG, "salio");
 
     }
 
-    private String getFragmentTag(int viewPagerId, int fragmentPosition) {
-        return "android:switcher:" + viewPagerId + ":" + fragmentPosition;
-    }
+    //hacky way to get fragment
+//    private String getFragmentTag(int viewPagerId, int fragmentPosition) {
+//        return "android:switcher:" + viewPagerId + ":" + fragmentPosition;
+//    }
 
+    //TODO guardar en carpeta propia TambosCSV
     public void generateNoteOnSD(String filename, String body) {
 
         try {
@@ -185,7 +179,20 @@ public class SwypeActivity extends AppCompatActivity {
 //                    csv.flush();
 //                    csv.close();
 
-                    Toast.makeText(getApplicationContext(), "Datos exportados! Ubicacion: " + newFile.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                    //Dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    String mensaje = "Ubicacion: Almacenamiento local > Dipositivo > DCIM > "+ txtname;
+                    builder.setMessage(mensaje)
+                            .setTitle("Datos exportados!")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    //Cerrar app
+                                    finish();
+                                }
+                            });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
                 }
             }
 
@@ -197,7 +204,12 @@ public class SwypeActivity extends AppCompatActivity {
 
     public void onBackPressed() {
         // do something here and don't write super.onBackPressed()
-        Toast.makeText(getApplicationContext(), "Si habilito este boton vas a perder tu progreso...", Toast.LENGTH_LONG).show();
+        if (mViewPager.getCurrentItem() != 0) {
+            mViewPager.setCurrentItem(mViewPager.getCurrentItem() - 1,false);
+        }else{
+            Toast.makeText(getApplicationContext(), "Si habilito este boton vas a perder tu progreso...", Toast.LENGTH_LONG).show();
+//            finish();
+        }
     }
 
     private class PageSelectedListener implements ViewPager.OnPageChangeListener {
@@ -206,7 +218,6 @@ public class SwypeActivity extends AppCompatActivity {
         public void onPageSelected(int position) {
             Log.i(TAG, "addOnPageChangeListener");
 
-            //TODO save the DynamicFieldsFragment state
             int index = mViewPager.getCurrentItem();
             Log.i(TAG, "index " + index);
             Fragment f = mSectionsPagerAdapter.getItem(index);
@@ -224,5 +235,43 @@ public class SwypeActivity extends AppCompatActivity {
         }
     }
 
+//    public String getFragmentData(int i){
+
+//    String data = "";
+//        Fragment f;
+//        FragmentManager fragmentManager = getSupportFragmentManager();
+//        String tag = getFragmentTag(mViewPager.getId(), i);
+//        f = getSupportFragmentManager().findFragmentByTag(tag);
+
+//        if (f == null) {
+//            //creates new instance
+//            f = mSectionsPagerAdapter.getItem(i);
+//        }
+
+//        return (DynamicFieldsFragment) f;
+
+//    }
+
+    public String getFragmentData(int i){
+
+        String data = "";
+        DynamicFieldsFragment f = (DynamicFieldsFragment) mSectionsPagerAdapter.getRegisteredFragment(i);
+
+        if(f != null){
+
+            data += f.recoverData();
+            boolean endswithcomma = Objects.equals(data.substring(data.length() - 1), ",");
+            if (data.length() != 0 && endswithcomma)
+                data += "\n";
+            else data += ",\n";
+
+        }
+        else {
+            Log.i(TAG, "ALGO MALIO SAL " + i);
+        }
+
+        return data;
+
+    }
 
 }

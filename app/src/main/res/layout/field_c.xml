@@ -5,26 +5,15 @@
     android:layout_margin="5dp"
     android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/textview_nro"
-        android:name="brete"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:textColor="#2c73b6"
-        android:textSize="18sp" />
-
-    <EditText
-        android:id="@+id/number_edit_textlts"
-        android:name="litros"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="5"
-        android:hint="@string/litros"
-        android:inputType="number"
-        android:tag="field"
-        android:textSize="14sp" />
+    <!--<TextView-->
+        <!--android:id="@+id/textview_nro"-->
+        <!--android:name="brete"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_weight="1"-->
+        <!--android:gravity="center_vertical"-->
+        <!--android:textColor="#2c73b6"-->
+        <!--android:textSize="18sp" />-->
 
     <EditText
         android:id="@+id/number_edit_textcaravana"
@@ -35,5 +24,17 @@
         android:hint="@string/caravana"
         android:tag="field"
         android:textSize="14sp" />
+
+    <EditText
+        android:id="@+id/number_edit_textlts"
+        android:name="litros"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="5"
+        android:hint="@string/litros"
+        android:inputType="numberDecimal"
+        android:tag="field"
+        android:textSize="14sp" />
+
 
 </LinearLayout>

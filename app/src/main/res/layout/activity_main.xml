@@ -36,18 +36,18 @@
         android:orientation="vertical">
 
         <CheckBox
-            android:id="@+id/checkBox_muestras"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/muestras_correlativas" />
-
-        <CheckBox
             android:id="@+id/checkBox_caravanas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="@string/caravanas" />
+
+        <CheckBox
+            android:id="@+id/checkBox_muestras"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/muestras_correlativas" />
 
         <TextView
             android:id="@+id/textview_nrobretes"
@@ -65,21 +65,21 @@
             android:selectAllOnFocus="true"
             android:singleLine="false" />
 
-        <TextView
-            android:id="@+id/textview_nrovacas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:text="@string/vacas" />
+        <!--<TextView-->
+            <!--android:id="@+id/textview_nrovacas"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="center_vertical"-->
+            <!--android:text="@string/vacas" />-->
 
-        <EditText
-            android:id="@+id/edittext_vacas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="0"
-            android:inputType="number"
-            android:selectAllOnFocus="true"
-            android:singleLine="false" />
+        <!--<EditText-->
+            <!--android:id="@+id/edittext_vacas"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:hint="0"-->
+            <!--android:inputType="number"-->
+            <!--android:selectAllOnFocus="true"-->
+            <!--android:singleLine="false" />-->
     </LinearLayout>
 
 

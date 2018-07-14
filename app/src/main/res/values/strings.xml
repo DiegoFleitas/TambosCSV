@@ -101,5 +101,8 @@
     <string name="caravanas">Caravanas</string>
     <string name="bretes">Bretes</string>
     <string name="vacas">Vacas</string>
+    <string name="dialog_message" />
+    <string name="dialog_title" />
+    <string name="siguiente">Siguiente</string>
 </resources>
 

@@ -1,9 +1,9 @@
 package com.example.diego.tabbedswipe;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +41,35 @@ public class DynamicFieldsFragment extends Fragment {
     private int fieldsAdded = 0;
     private boolean wasDivided = false;
 
+    myCommunicationInterface mCallback;
+
+
+    // Container Activity must implement this interface
+    public interface myCommunicationInterface {
+        public void newPage(int pos);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (myCommunicationInterface) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
+    }
+
+/*
+If Android decides to recreate your Fragment later, it's going to call the no-argument constructor of your fragment.
+So overloading the constructor is not a solution.
+ */
+//FIXME que hago con esto
     public DynamicFieldsFragment() {
+
     }
 
     public static List<View> getViewsByTag(View root, String tag) {
@@ -68,14 +96,16 @@ public class DynamicFieldsFragment extends Fragment {
      */
     public DynamicFieldsFragment newInstance(int sectionNumber, int bretes, boolean muestra, boolean caravana) {
 
-        Log.i(TAG, "newInstance " + sectionNumber);
+//        el moverse de pagina instancia de vuelta
+//        addOnPageChangeListener ejecuta antes que esto
+        Log.i(TAG, "newInstance() " + sectionNumber);
 
         SECTION_NUMBER = sectionNumber;
         BRETES = bretes;
         MUESTRA = muestra;
         CARAVANA = caravana;
-
         String myData = "no data " + SECTION_NUMBER;
+
         Bundle args = this.getArguments();
         if (args != null) {
             Log.i(TAG, "has data " + sectionNumber);
@@ -112,14 +142,14 @@ public class DynamicFieldsFragment extends Fragment {
     }
     //endregion
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        Log.i(TAG, "onSaveInstanceState DynamicFieldsFragment " + SECTION_NUMBER);
-
-
-    }
+//    @Override
+//    public void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//
+//        Log.i(TAG, "onSaveInstanceState DynamicFieldsFragment " + SECTION_NUMBER);
+//
+//
+//    }
 
     // If you return to a fragment from the back stack it does not
     // re-create the fragment but re-uses the same instance and starts with onCreateView
@@ -140,13 +170,23 @@ public class DynamicFieldsFragment extends Fragment {
             }
         });
 
-        Button delbtn = rootView.findViewById(R.id.delete_button);
-        delbtn.setOnClickListener(new OnClickListener() {
+        Button nextpage = rootView.findViewById(R.id.next_page);
+        nextpage.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                onDelete(v);
+                mCallback.newPage(SECTION_NUMBER);
             }
         });
+
+
+
+//        Button delbtn = rootView.findViewById(R.id.delete_button);
+//        delbtn.setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                onDelete(v);
+//            }
+//        });
 
 //        Button expbtn = (Button) rootView.findViewById(R.id.export_button);
 //        expbtn.setOnClickListener(new OnClickListener()
@@ -163,6 +203,12 @@ public class DynamicFieldsFragment extends Fragment {
         //To prevent ViewPager to recreate the fragment
 //        setRetainInstance(true);
 
+        String data = "";
+        if (savedInstanceState != null) {
+            savedInstanceState.getString("DATA", data);
+        }
+        setData(data);
+
         return rootView;
     }
 
@@ -177,15 +223,16 @@ public class DynamicFieldsFragment extends Fragment {
             addField(b);
         }
 
+        // Save data on input focus
         List<View> fields = getViewsByTag(getView(), "field");
         for (View field : fields) {
-            EditText txtEdit = (EditText) field;
 
+            EditText txtEdit = (EditText) field;
             txtEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus) {
-                        // code to execute when EditText loses focus
+                    if (!hasFocus) { // when EditText loses focus
+
                         Log.i(TAG, v.getId() + " lost focus");
 //                        Log.i(TAG,getData());
 
@@ -194,8 +241,9 @@ public class DynamicFieldsFragment extends Fragment {
                         Runnable myRunnable = new Runnable() {
                             @Override
                             public void run() {
-                                // This is your code
+
                                 saveData();
+
                             }
                         };
                         mainHandler.post(myRunnable);
@@ -207,11 +255,14 @@ public class DynamicFieldsFragment extends Fragment {
 
     }
 
-    public void onDelete(View v) {
-        int count = parentLayout.getChildCount();
-        if (count >= 2) parentLayout.removeView(parentLayout.getChildAt(count - 2));
-        else new AlertDialog.Builder(v.getContext()).setMessage("Primero agrega uno!").show();
-    }
+//    public void onDelete(View v) {
+//        int count = parentLayout.getChildCount();
+//        if (count >= 2) parentLayout.removeView(parentLayout.getChildAt(count - 2));
+//        else new AlertDialog.Builder(v.getContext()).setMessage("Primero agrega uno!").show();
+//    }
+
+    //TODO chequeo al ingresar litro
+    //Confirmar cuando Litro mayor a 40
 
     public void addField(int n) {
         for (int i = n; i > 0; i--) {
@@ -219,33 +270,9 @@ public class DynamicFieldsFragment extends Fragment {
         }
     }
 
-    public LinearLayout getParentLayout() {
-        return parentLayout;
-    }
-
-    public int getSECTION_NUMBER() {
-        return SECTION_NUMBER;
-    }
-
-    public void newDivider(int n) {
-        removeDivider(n - 1);
-        addDivider(n);
-        wasDivided = true;
-    }
-
-    public void removeDivider(int total) {
-        View v = parentLayout.getChildAt(total / 2);
-        if (v != null) v.setPadding(0, 0, 0, 0);
-    }
-
-    public void addDivider(int total) {
-        View v = parentLayout.getChildAt(total / 2);
-        if (v != null) v.setPadding(0, 150, 0, 0);
-    }
-
     public void onAddField() {
 
-        Log.i(TAG, "onAddField DynamicFieldsFragment " + SECTION_NUMBER);
+//        Log.i(TAG, "onAddField DynamicFieldsFragment " + SECTION_NUMBER);
 
         if (this.isAdded()) {
 
@@ -274,27 +301,95 @@ public class DynamicFieldsFragment extends Fragment {
 
             int count = parentLayout.getChildCount();
 
-            TextView myAwesomeTextView = rowView.findViewById(R.id.textview_nro);
-            myAwesomeTextView.setText("" + count);
+            if(MUESTRA){
+                TextView m = rowView.findViewById(R.id.number_edit_textmuestra);
+                m.setText("" + count);
+            }
 
             // Add the new row before the add field_cm button.
             parentLayout.addView(rowView, count - 1);
 
-            // division
             fieldsAdded++;
-            if (wasDivided) newDivider(fieldsAdded);
-            if (fieldsAdded == BRETES) newDivider(BRETES);
+
+            // division de bretes
+//            if (wasDivided) newDivider(fieldsAdded);
+//            if (fieldsAdded == BRETES) newDivider(BRETES);
+
         }
 
     }
 
+    //TODO recover state from Bundle (and stop abusing setOffscreenPageLimit)
+    public void setData(String data) {
+        Log.i(TAG, "setData() "+SECTION_NUMBER );
+
+        if(data == null || data.equals("") ){
+            Log.i(TAG, "setData() FAILED");
+            return;
+        }
+
+        String caravana = "", litros = "", muestra = "", bretada = "";
+        try {
+            String[] lines = data.split("\\n");
+            int count = 0;
+            if (CARAVANA && MUESTRA) {
+//              caravana,litros,muestra,bretada,
+                if (parentLayout != null)
+                    count = parentLayout.getChildCount();
+                else {
+                    View v = this.getView();
+                    if (v != null) {
+                        parentLayout = v.findViewById(R.id.parent_layout);
+                        count = parentLayout.getChildCount();
+                    } else {
+                        Log.i(TAG, "View es null");
+                        return;
+                    }
+                }
+
+//                Log.i(TAG,"count "+count);
+                for(int h = 0; h < lines.length; h++){
+
+                    String[] values = lines[h].split(",");
+
+                    for (int i = 0; i < values.length; i++) {
+
+                        String text = values[i];
+                        Log.i(TAG, "text "+ text);
+
+
+                    }
+                }
+
+            } else if (MUESTRA || CARAVANA) {
+                if (MUESTRA) {
+
+//                    "litros,muestra,bretada,
+
+                }
+                if (CARAVANA) {
+
+//                    body += "caravana,litros,bretada,\n";
+
+                }
+            } else {
+                Log.i(TAG, "No se setearon MUESTRA y CARAVANA");
+
+//                body += "litros,bretada,\n";
+
+            } //END no seteado
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getData() {
         EditText text;
-        String litros = "", caravana = "", muestra = "", brete = "", body = "", lote = "";
-        lote = String.valueOf(SECTION_NUMBER);
+        String caravana = "", litros = "", muestra = "", bretada = "", body = "";
+        bretada = String.valueOf(SECTION_NUMBER);
         try {
             if (CARAVANA && MUESTRA) {
-                body += "brete,litros,caravana,muestra,lote,\n";
+                body += "caravana,litros,muestra,bretada,\n";
                 //            every field_cm group
                 int count = 0;
                 if (parentLayout != null)
@@ -319,32 +414,31 @@ public class DynamicFieldsFragment extends Fragment {
 //                    Log.i(TAG,"countfield "+countfield);
                     for (int j = 0; j < countfield; j++) {
                         View child = field.getChildAt(j);
-                        if (j == 0) {
-                            brete = "" + (i + 1);
-//                            Log.i(TAG,"brete "+brete);
-                        }
-                        if (j == 1) {
-                            text = (EditText) child;
-                            litros = text.getText().toString();
-//                            Log.i(TAG,"litros "+litros);
-                        }
-                        if (j == 2) {
-                            text = (EditText) child;
-                            caravana = text.getText().toString();
-//                            Log.i(TAG,"caravana "+caravana);
-                        }
-                        if (j == 3) {
-                            text = (EditText) child;
-                            muestra = text.getText().toString();
-//                            Log.i(TAG,"muestra "+muestra);
-                            body += brete + "," + litros + "," + caravana + "," + muestra + "," + lote + ",\n";
+                        switch(j){
+                            case 0 :
+                                text = (EditText) child;
+                                caravana = text.getText().toString();
+//                                Log.i(TAG,"caravana "+caravana);
+                                break;
+                            case 1 :
+                                text = (EditText) child;
+                                litros = text.getText().toString();
+//                                Log.i(TAG,"litros "+litros);
+                                break;
+                            case 2 :
+                                text = (EditText) child;
+                                muestra = text.getText().toString();
+//                                Log.i(TAG,"muestra "+muestra);
+                                body += caravana + "," + litros + "," + muestra + "," + bretada + ",\n";
+                                break;
                         }
                     }
                 }
+
             } else if (MUESTRA || CARAVANA) {
                 if (MUESTRA) {
 
-                    body += "brete,litros,muestra,lote,\n";
+                    body += "litros,muestra,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -357,27 +451,25 @@ public class DynamicFieldsFragment extends Fragment {
 //                        Log.i(TAG,"countfield "+countfield);
                         for (int j = 0; j < countfield; j++) {
                             View child = field.getChildAt(j);
-                            if (j == 0) {
-                                brete = "" + (i + 1);
-//                                Log.i(TAG,"brete "+brete);
-                            }
-                            if (j == 1) {
-                                text = (EditText) child;
-                                litros = text.getText().toString();
-//                                Log.i(TAG,"litros "+litros);
-                            }
-                            if (j == 2) {
-                                text = (EditText) child;
-                                muestra = text.getText().toString();
-//                                Log.i(TAG,"muestra "+muestra);
-                                body += brete + "," + litros + "," + muestra + "," + lote + ",\n";
+                            switch(j){
+                                case 0 :
+                                    text = (EditText) child;
+                                    litros = text.getText().toString();
+//                                    Log.i(TAG,"litros "+litros);
+                                    break;
+                                case 1 :
+                                    text = (EditText) child;
+                                    muestra = text.getText().toString();
+//                                    Log.i(TAG,"muestra "+muestra);
+                                    body += litros + "," + muestra + "," + bretada + ",\n";
+                                    break;
                             }
                         }
                     }
                 }
                 if (CARAVANA) {
 
-                    body += "brete,litros,caravana,lote,\n";
+                    body += "caravana,litros,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -390,20 +482,18 @@ public class DynamicFieldsFragment extends Fragment {
 //                        Log.i(TAG,"countfield "+countfield);
                         for (int j = 0; j < countfield; j++) {
                             View child = field.getChildAt(j);
-                            if (j == 0) {
-                                brete = "" + (i + 1);
-//                                Log.i(TAG,"brete "+brete);
-                            }
-                            if (j == 1) {
-                                text = (EditText) child;
-                                litros = text.getText().toString();
-//                                Log.i(TAG,"litros "+litros);
-                            }
-                            if (j == 2) {
-                                text = (EditText) child;
-                                caravana = text.getText().toString();
-//                                Log.i(TAG,"caravana "+caravana);
-                                body += brete + "," + litros + "," + caravana + "," + lote + ",\n";
+                            switch(j){
+                                case 0 :
+                                    text = (EditText) child;
+                                    caravana = text.getText().toString();
+//                                    Log.i(TAG,"caravana "+caravana);
+                                    break;
+                                case 1 :
+                                    text = (EditText) child;
+                                    litros = text.getText().toString();
+//                                    Log.i(TAG,"litros "+litros);
+                                    body += caravana + "," + litros + "," + bretada + ",\n";
+                                    break;
                             }
                         }
                     }
@@ -411,7 +501,7 @@ public class DynamicFieldsFragment extends Fragment {
             } else {
                 Log.i(TAG, "No se setearon MUESTRA y CARAVANA");
 
-                body += "brete,litros,lote,\n";
+                body += "litros,bretada,\n";
 
                 //            every field_cm group
                 int count = parentLayout.getChildCount();
@@ -424,16 +514,14 @@ public class DynamicFieldsFragment extends Fragment {
 //                    Log.i(TAG,"countfield "+countfield);
                     for (int j = 0; j < countfield; j++) {
                         View child = field.getChildAt(j);
-                        if (j == 0) {
-                            brete = "" + (i + 1);
-//                            Log.i(TAG,"brete "+brete);
-                        }
-                        if (j == 1) {
-                            text = (EditText) child;
-                            litros = text.getText().toString();
-//                            Log.i(TAG,"litros "+litros);
-                            body += brete + "," + litros + "," + lote + ",\n";
-                        }
+//                        switch(j){
+//                            case 0 :
+                                text = (EditText) child;
+                                litros = text.getText().toString();
+//                                Log.i(TAG,"litros "+litros);
+                                body += litros + "," + bretada + ",\n";
+//                                break;
+//                        }
                     }
                 }
             } //END no seteado
@@ -450,13 +538,11 @@ public class DynamicFieldsFragment extends Fragment {
 
         String myData = "";
         Bundle args = this.getArguments();
-        if (args != null) myData = args.getString("DATA");
+        if (args != null){
+            // Restore the fragment's state here
+            myData = args.getString("DATA");
+        }
         else Log.i(TAG, "Bundle was null " + SECTION_NUMBER);
-
-//        if (mState != null) {
-//            //Restore the fragment's state here
-//            mState.getString("DATA", myData);
-//        }
 
         return myData;
     }
@@ -464,22 +550,34 @@ public class DynamicFieldsFragment extends Fragment {
     public void saveData() {
         Log.i(TAG, "saveData " + SECTION_NUMBER);
 
-        //Save the fragment's state here
-//        mState.putString("DATA", getData());
-//        this.setArguments(mState);
-//        return mState;
-
-
         Bundle args = this.getArguments();
         String data = getData();
         Log.i(TAG, "data " + SECTION_NUMBER);
         Log.i(TAG, data);
         args.clear();
+        //Save the fragment's state here
         args.putString("DATA", data);
         this.setArguments(args);
 
     }
 
+    //    region sin division de bretes
+//    public void newDivider(int n) {
+//        removeDivider(n - 1);
+//        addDivider(n);
+//        wasDivided = true;
+//    }
+
+//    public void removeDivider(int total) {
+//        View v = parentLayout.getChildAt(total / 2);
+//        if (v != null) v.setPadding(0, 0, 0, 0);
+//    }
+
+//    public void addDivider(int total) {
+//        View v = parentLayout.getChildAt(total / 2);
+//        if (v != null) v.setPadding(0, 150, 0, 0);
+//    }
+//    endregion
 
 }
 

@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +49,7 @@ public class DynamicFieldsFragment extends Fragment {
     // Container Activity must implement this interface
     public interface myCommunicationInterface {
         public void newPage(int pos);
+        public void mostrarDialogoLitros();
     }
 
     @Override
@@ -67,9 +70,8 @@ public class DynamicFieldsFragment extends Fragment {
 If Android decides to recreate your Fragment later, it's going to call the no-argument constructor of your fragment.
 So overloading the constructor is not a solution.
  */
-//FIXME que hago con esto
+    //FIXME que hago con esto ?
     public DynamicFieldsFragment() {
-
     }
 
     public static List<View> getViewsByTag(View root, String tag) {
@@ -223,18 +225,52 @@ So overloading the constructor is not a solution.
             addField(b);
         }
 
-        // Save data on input focus
         List<View> fields = getViewsByTag(getView(), "field");
         for (View field : fields) {
 
-            EditText txtEdit = (EditText) field;
+            final EditText txtEdit = (EditText) field;
+
+            // Validar litros
+            CharSequence test = txtEdit.getHint();
+            if(test.equals("Litros")){
+                txtEdit.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        String value = txtEdit.getText().toString();
+                        float litros = 0;
+                        if(!value.isEmpty()){
+                            try{
+                                litros = Float.parseFloat(value);
+                            }catch(Exception e){
+                                Log.i(TAG, e.getMessage());
+                            }
+                            if(litros >= 40){
+
+                                mCallback.mostrarDialogoLitros();
+
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Save data on input focus
             txtEdit.setOnFocusChangeListener(new OnFocusChangeListener() {
                 @Override
                 public void onFocusChange(View v, boolean hasFocus) {
                     if (!hasFocus) { // when EditText loses focus
 
                         Log.i(TAG, v.getId() + " lost focus");
-//                        Log.i(TAG,getData());
 
                         // Get a handler that can be used to post to the main thread
                         Handler mainHandler = new Handler(getContext().getMainLooper());
@@ -261,8 +297,7 @@ So overloading the constructor is not a solution.
 //        else new AlertDialog.Builder(v.getContext()).setMessage("Primero agrega uno!").show();
 //    }
 
-    //TODO chequeo al ingresar litro
-    //Confirmar cuando Litro mayor a 40
+
 
     public void addField(int n) {
         for (int i = n; i > 0; i--) {
@@ -311,9 +346,11 @@ So overloading the constructor is not a solution.
 
             fieldsAdded++;
 
-            // division de bretes
+//            // division de bretes
 //            if (wasDivided) newDivider(fieldsAdded);
 //            if (fieldsAdded == BRETES) newDivider(BRETES);
+
+//            newDivider(BRETES);
 
         }
 
@@ -386,10 +423,31 @@ So overloading the constructor is not a solution.
     public String getData() {
         EditText text;
         String caravana = "", litros = "", muestra = "", bretada = "", body = "";
-        bretada = String.valueOf(SECTION_NUMBER);
+
+        //Una bretada son 2 paginas
+//        SECTION_NUMBER 1 => bretada 1
+//        SECTION_NUMBER 2 => bretada 1
+
+//        SECTION_NUMBER 3 => bretada 2
+//        SECTION_NUMBER 4 => bretada 2
+
+//        SECTION_NUMBER 5 => bretada 3
+//        SECTION_NUMBER 6 => bretada 3
+
+//        SECTION_NUMBER 7 => bretada 4
+//        SECTION_NUMBER 8 => bretada 4
+
+        int n = 1;
+        if(SECTION_NUMBER != 1 && SECTION_NUMBER != 2){
+            if(SECTION_NUMBER % 2 == 0) n = SECTION_NUMBER / 2;
+            else n = (SECTION_NUMBER + 1) / 2;
+        }
+        bretada = String.valueOf(n);
+
+
         try {
             if (CARAVANA && MUESTRA) {
-                body += "caravana,litros,muestra,bretada,\n";
+//                body += "caravana,litros,muestra,bretada,\n";
                 //            every field_cm group
                 int count = 0;
                 if (parentLayout != null)
@@ -418,6 +476,8 @@ So overloading the constructor is not a solution.
                             case 0 :
                                 text = (EditText) child;
                                 caravana = text.getText().toString();
+                                caravana = byeCommas(caravana);
+
 //                                Log.i(TAG,"caravana "+caravana);
                                 break;
                             case 1 :
@@ -428,8 +488,10 @@ So overloading the constructor is not a solution.
                             case 2 :
                                 text = (EditText) child;
                                 muestra = text.getText().toString();
+                                muestra = byeCommas(muestra);
+
 //                                Log.i(TAG,"muestra "+muestra);
-                                body += caravana + "," + litros + "," + muestra + "," + bretada + ",\n";
+                                body += caravana + "," + litros + "," + muestra + "," + bretada + "\n";
                                 break;
                         }
                     }
@@ -438,7 +500,7 @@ So overloading the constructor is not a solution.
             } else if (MUESTRA || CARAVANA) {
                 if (MUESTRA) {
 
-                    body += "litros,muestra,bretada,\n";
+//                    body += "litros,muestra,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -455,13 +517,16 @@ So overloading the constructor is not a solution.
                                 case 0 :
                                     text = (EditText) child;
                                     litros = text.getText().toString();
+
 //                                    Log.i(TAG,"litros "+litros);
                                     break;
                                 case 1 :
                                     text = (EditText) child;
                                     muestra = text.getText().toString();
+                                    muestra = byeCommas(muestra);
+
 //                                    Log.i(TAG,"muestra "+muestra);
-                                    body += litros + "," + muestra + "," + bretada + ",\n";
+                                    body += ","+ litros + "," + muestra + "," + bretada + "\n";
                                     break;
                             }
                         }
@@ -469,7 +534,7 @@ So overloading the constructor is not a solution.
                 }
                 if (CARAVANA) {
 
-                    body += "caravana,litros,bretada,\n";
+//                    body += "caravana,litros,bretada,\n";
 
                     //            every field_cm group
                     int count = parentLayout.getChildCount();
@@ -486,13 +551,16 @@ So overloading the constructor is not a solution.
                                 case 0 :
                                     text = (EditText) child;
                                     caravana = text.getText().toString();
+                                    caravana = byeCommas(caravana);
+
 //                                    Log.i(TAG,"caravana "+caravana);
                                     break;
                                 case 1 :
                                     text = (EditText) child;
                                     litros = text.getText().toString();
+
 //                                    Log.i(TAG,"litros "+litros);
-                                    body += caravana + "," + litros + "," + bretada + ",\n";
+                                    body += caravana + "," + litros + "," +  "," + bretada + "\n";
                                     break;
                             }
                         }
@@ -501,7 +569,7 @@ So overloading the constructor is not a solution.
             } else {
                 Log.i(TAG, "No se setearon MUESTRA y CARAVANA");
 
-                body += "litros,bretada,\n";
+//                body += "litros,bretada,\n";
 
                 //            every field_cm group
                 int count = parentLayout.getChildCount();
@@ -519,7 +587,7 @@ So overloading the constructor is not a solution.
                                 text = (EditText) child;
                                 litros = text.getText().toString();
 //                                Log.i(TAG,"litros "+litros);
-                                body += litros + "," + bretada + ",\n";
+                                body += "," + litros + "," + "," +  bretada + "\n";
 //                                break;
 //                        }
                     }
@@ -561,18 +629,23 @@ So overloading the constructor is not a solution.
 
     }
 
-    //    region sin division de bretes
+    // deletes commas that would ruin the csv format
+    public String byeCommas(String text){
+        return text.replace(",","");
+    }
+
+    //    region division de bretes
 //    public void newDivider(int n) {
 //        removeDivider(n - 1);
 //        addDivider(n);
 //        wasDivided = true;
 //    }
-
+//
 //    public void removeDivider(int total) {
 //        View v = parentLayout.getChildAt(total / 2);
 //        if (v != null) v.setPadding(0, 0, 0, 0);
 //    }
-
+//
 //    public void addDivider(int total) {
 //        View v = parentLayout.getChildAt(total / 2);
 //        if (v != null) v.setPadding(0, 150, 0, 0);

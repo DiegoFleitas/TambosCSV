@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                 boolean MUESTRA = ((CheckBox) findViewById(R.id.checkBox_muestras)).isChecked();
                 EditText b = findViewById(R.id.edittext_bretes);
                 String brete = b.getText().toString();
-                int BRETES = 1; //Al menos 2 bretes
+                int BRETES = 1; //Al menos 2 bretes, 1 por pantalla
                 if (!brete.isEmpty())
                     BRETES = Integer.parseInt(brete);
 
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
 //                Log.i(TAG,"CARAVANA "+CARAVANA);
 //                Log.i(TAG,"VACAS "+VACAS);
 
-                i.putExtra("BRETES", BRETES * 2); //Se habla en bretes de un lado solo
+                i.putExtra("BRETES", BRETES);
                 i.putExtra("MUESTRA", MUESTRA);
                 i.putExtra("CARAVANA", CARAVANA);
 //                i.putExtra("VACAS", VACAS);

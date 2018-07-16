@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -15,13 +14,17 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
+
+import static com.example.diego.tabbedswipe.ExternalStorageUtil.getPublicExternalStorageBaseDir;
+import static com.example.diego.tabbedswipe.ExternalStorageUtil.isExternalStorageMounted;
+import static com.example.diego.tabbedswipe.ExternalStorageUtil.newFolder;
 
 public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFragment.myCommunicationInterface {
 
@@ -41,6 +44,10 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
+    private String folderName = "TambosCSV";
+
+    AlertDialog confirmarLitros;
+
     public void newPage(int pos) {
 
         Log.i(TAG, "newPage "+pos);
@@ -51,6 +58,23 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
         mSectionsPagerAdapter.setN(pos + 1);
         mSectionsPagerAdapter.notifyDataSetChanged();
         mViewPager.setCurrentItem(pos + 1);
+    }
+
+//    public void hideKeyboard(Activity activity) {
+//        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+//        //Find the currently focused view, so we can grab the correct window token from it.
+//        View view = activity.getCurrentFocus();
+//        //If no view currently has focus, create a new one, just so we can grab a window token from it
+//        if (view == null) {
+//            view = new View(activity);
+//        }
+//        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//    }
+
+    public void mostrarDialogoLitros(){
+
+//        hideKeyboard(this);
+        confirmarLitros.show();
     }
 
     @Override
@@ -92,9 +116,37 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
 
         //Saves the state of N fragments
         //TODO independizarse de esto para guardar datos
-        mViewPager.setOffscreenPageLimit(50);
+        mViewPager.setOffscreenPageLimit(70);
 
         mViewPager.addOnPageChangeListener(new PageSelectedListener());
+
+        //Ask for confirmation Dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String mensaje = "Esta seguro que desea ingresar mas de 40 litros?";
+        builder.setMessage(mensaje)
+                .setTitle("Demasiados litros!")
+                .setPositiveButton("SI", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                })
+                .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        //Tomar fragment actual, borrar campo focuseado
+                        // returns current Fragment item displayed within the pager
+                        DynamicFieldsFragment f = (DynamicFieldsFragment) mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+                        EditText borrar = (EditText) f.getView().findFocus();
+                        borrar.setText("");
+
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        //To prevent dialog box from getting dismissed on back key pressed
+        dialog.setCancelable(false);
+        //to prevent dialog box from getting dismissed on outside touch
+        dialog.setCanceledOnTouchOutside(false);
+        confirmarLitros = dialog;
+
     }
 
     @Override
@@ -123,7 +175,7 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
 
         Log.i(TAG, "entro");
 
-        String data = "";
+        String data = "caravana,litros,muestra,bretada,\n";
         for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
 
             data += getFragmentData(i);
@@ -143,11 +195,10 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
 //        return "android:switcher:" + viewPagerId + ":" + fragmentPosition;
 //    }
 
-    //TODO guardar en carpeta propia TambosCSV
     public void generateNoteOnSD(String filename, String body) {
 
         try {
-            if (ExternalStorageUtil.isExternalStorageMounted()) {
+            if (isExternalStorageMounted()) {
 
                 // Check whether this app has write external storage permission or not.
                 int writeExternalStoragePermission = ContextCompat.checkSelfPermission(SwypeActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -156,8 +207,15 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
                     // Request user to grant write external storage permission.
                     ActivityCompat.requestPermissions(SwypeActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE_WRITE_EXTERNAL_STORAGE_PERMISSION);
                 } else {
+
                     // Save filename.txt file to /storage/emulated/0/DCIM folder
-                    String publicDcimDirPath = ExternalStorageUtil.getPublicExternalStorageBaseDir(Environment.DIRECTORY_DCIM);
+//                    String publicDcimDirPath = getPublicExternalStorageBaseDir(Environment.DIRECTORY_DCIM);
+                    String publicDcimDirPath = getPublicExternalStorageBaseDir("");
+
+                    Log.i(TAG, "publicDcimDirPath "+publicDcimDirPath);
+
+                    boolean success = newFolder(null, folderName);
+                    if(success) publicDcimDirPath += "/" + folderName;
 
 //                    current date
                     Date currentTime = Calendar.getInstance().getTime();
@@ -181,7 +239,7 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
 
                     //Dialog
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    String mensaje = "Ubicacion: Almacenamiento local > Dipositivo > DCIM > "+ txtname;
+                    String mensaje = "Ubicacion: Almacenamiento local > Dipositivo > "+folderName+" > "+ txtname;
                     builder.setMessage(mensaje)
                             .setTitle("Datos exportados!")
                             .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -260,10 +318,6 @@ public class SwypeActivity extends AppCompatActivity implements DynamicFieldsFra
         if(f != null){
 
             data += f.recoverData();
-            boolean endswithcomma = Objects.equals(data.substring(data.length() - 1), ",");
-            if (data.length() != 0 && endswithcomma)
-                data += "\n";
-            else data += ",\n";
 
         }
         else {

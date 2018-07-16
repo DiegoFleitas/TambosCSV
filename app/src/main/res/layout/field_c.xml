@@ -33,6 +33,7 @@
         android:layout_weight="5"
         android:hint="@string/litros"
         android:inputType="numberDecimal"
+        android:maxLength="5"
         android:tag="field"
         android:textSize="14sp" />
 

@@ -125,4 +125,17 @@ public class ExternalStorageUtil {
         }
         return ret;
     }
+
+    // create bnew Folder
+    public static boolean newFolder(File path, String name) {
+        if(path == null ) path = Environment.getExternalStorageDirectory();
+        File folder = new File(path + "/" + name);
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdirs();
+        }
+        return success;
+    }
+
+
 }
